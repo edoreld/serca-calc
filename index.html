@@ -15,51 +15,54 @@
                 <h2 class="text-xl font-semibold text-slate-300">Market Prices (per 100 stack)</h2>
                 <div class="grid grid-cols-1 gap-3">
                     <div>
-                        <label class="block text-sm font-medium mb-1">Timber (100x)</label>
-                        <input type="number" id="p-timber" value="180" class="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 outline-none focus:border-blue-500">
+                        <label class="block text-sm font-medium mb-1">Timber Cost (100x)</label>
+                        <input type="number" id="price-timber" value="180" class="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 outline-none focus:border-blue-500">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium mb-1">Tender Timber (100x)</label>
-                        <input type="number" id="p-tender" value="358" class="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 outline-none focus:border-blue-500">
+                        <label class="block text-sm font-medium mb-1">Tender Timber Cost (100x)</label>
+                        <input type="number" id="price-tender" value="358" class="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 outline-none focus:border-blue-500">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium mb-1">Sturdy Timber (100x)</label>
-                        <input type="number" id="p-sturdy" value="1686" class="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 outline-none focus:border-blue-500">
+                        <label class="block text-sm font-medium mb-1">Sturdy Timber Cost (100x)</label>
+                        <input type="number" id="price-sturdy" value="1686" class="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 outline-none focus:border-blue-500">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium mb-1">Abidos Timber (100x)</label>
-                        <input type="number" id="p-abidos" value="2198" class="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 outline-none focus:border-blue-500">
+                        <label class="block text-sm font-medium mb-1">Abidos Timber Cost (100x)</label>
+                        <input type="number" id="price-abidos" value="2198" class="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 outline-none focus:border-blue-500">
                     </div>
                 </div>
 
-                <h2 class="text-xl font-semibold text-slate-300 mt-6">Target Goal</h2>
-                <div>
-                    <label class="block text-sm font-medium mb-1">How many Serca Fusion Materials to craft?</label>
-                    <input type="number" id="target-serca" value="1000" step="10" class="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 outline-none focus:border-blue-500">
+                <h2 class="text-xl font-semibold text-slate-300 mt-6">Wallet Settings</h2>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Gold Balance</label>
+                        <input type="number" id="gold-balance" value="1400000" class="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Gold To Keep</label>
+                        <input type="number" id="gold-keep" value="100000" class="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 outline-none focus:border-blue-500">
+                    </div>
                 </div>
                 
                 <button onclick="calculate()" class="w-full bg-blue-600 hover:bg-blue-500 transition-colors py-3 rounded-lg font-bold text-lg mt-4">
-                    Optimize Purchase List
+                    Calculate Max Craft
                 </button>
             </section>
 
             <section id="results" class="bg-slate-900/50 rounded-lg p-6 border border-slate-700 hidden">
-                <h2 class="text-xl font-semibold text-green-400 mb-4">Optimal Purchase Strategy</h2>
+                <h2 class="text-xl font-semibold text-blue-300 mb-4">Optimal Strategy</h2>
                 <div class="space-y-4">
-                    <div id="shopping-summary" class="space-y-3">
-                        </div>
+                    <div class="text-4xl font-bold text-green-400" id="res-total-crafts">0</div>
+                    <p class="text-sm text-slate-400">Total Serca Fusion Materials</p>
                     
                     <hr class="border-slate-700">
                     
-                    <div class="p-3 bg-blue-900/20 rounded border border-blue-800/50">
-                        <h3 class="text-sm font-bold text-blue-300 uppercase tracking-wider mb-2">Required Trades</h3>
-                        <ul id="trade-instructions" class="text-xs space-y-1 text-slate-300 list-disc list-inside"></ul>
-                    </div>
-
-                    <div class="pt-4">
-                        <p class="text-sm text-slate-400">Total Material Cost:</p>
-                        <div id="total-cost" class="text-2xl font-mono text-yellow-500 font-bold">0g</div>
-                    </div>
+                    <h3 class="font-medium text-slate-300">Purchase List (Stacks of 100):</h3>
+                    <ul id="res-shopping-list" class="space-y-1 text-slate-200"></ul>
+                    
+                    <h3 class="font-medium text-slate-300 mt-4">Remaining Gold:</h3>
+                    <div id="res-remaining-gold" class="text-lg font-mono text-yellow-500">0g</div>
+                    <p class="text-xs text-slate-500 italic">*Includes flat crafting fees and AH purchases.</p>
                 </div>
             </section>
         </div>
@@ -67,99 +70,65 @@
 
     <script>
         function calculate() {
-            const target = parseInt(document.getElementById('target-serca').value);
-            const batches = Math.ceil(target / 10);
+            const pTimber = parseFloat(document.getElementById('price-timber').value);
+            const pTender = parseFloat(document.getElementById('price-tender').value);
+            const pSturdy = parseFloat(document.getElementById('price-sturdy').value);
+            const pAbidos = parseFloat(document.getElementById('price-abidos').value);
             
-            // Raw AH Unit Prices
-            const ah = {
-                timber: parseFloat(document.getElementById('p-timber').value) / 100,
-                tender: parseFloat(document.getElementById('p-tender').value) / 100,
-                sturdy: parseFloat(document.getElementById('p-sturdy').value) / 100,
-                abidos: parseFloat(document.getElementById('p-abidos').value) / 100
+            const goldTotal = parseFloat(document.getElementById('gold-balance').value);
+            const goldKeep = parseFloat(document.getElementById('gold-keep').value);
+            const availableBudget = goldTotal - goldKeep;
+
+            // Effective individual item costs from AH
+            const unitCosts = {
+                timber: pTimber / 100,
+                tender: pTender / 100,
+                sturdy: pSturdy / 100,
+                abidos: pAbidos / 100
             };
 
-            // Recipe Requirements
-            const req = {
-                timber: 112 * batches,
-                tender: 59 * batches,
-                abidos: 43 * batches
-            };
+            // Optimization: Find cheapest way to get 1 of each required item
+            // 25 Tender -> 50 Timber (1 Tender = 2 Timber)
+            // 5 Sturdy -> 50 Timber (1 Sturdy = 10 Timber)
+            // 100 Powder -> 50 Tender | 10 Sturdy | 10 Abidos
+            // We'll use a simplified comparison for the specific recipe needs:
+            const bestCostTimber = Math.min(unitCosts.timber, (unitCosts.tender * 25/50), (unitCosts.sturdy * 5/50));
+            const bestCostTender = Math.min(unitCosts.tender, (unitCosts.timber * 100/80 * 100/50)); // Timber -> Powder -> Tender
+            const bestCostAbidos = Math.min(unitCosts.abidos, (unitCosts.timber * 100/80 * 100/10)); // Timber -> Powder -> Abidos
 
-            // Calculate Effective Prices via Conversions
-            // Timber can be made from Tender (25->50) or Sturdy (5->50)
-            const effTimber = Math.min(ah.timber, ah.tender * 25/50, ah.sturdy * 5/50);
+            // Cost per 10x Craft (Batch)
+            // Requirements: 112 Timber, 59 Tender, 43 Abidos + 462g fee
+            const materialCostPerBatch = (112 * bestCostTimber) + (59 * bestCostTender) + (43 * bestCostAbidos);
+            const totalCostPerBatch = materialCostPerBatch + 462;
+
+            const totalBatches = Math.floor(availableBudget / totalCostPerBatch);
             
-            // Powder is a proxy. 100 Powder = 50 Tender | 10 Sturdy | 10 Abidos
-            // 100 Powder cost = min(100 Timber * 1.25, 50 Tender * 2) <- corrected ratios
-            const powderCost = Math.min(ah.timber * (100/80), ah.tender * (50/80));
-            
-            const effTender = Math.min(ah.tender, powderCost * (100/50));
-            const effAbidos = Math.min(ah.abidos, powderCost * (100/10));
-
-            // Determine if trading is actually better
-            const useTradeForTimber = effTimber < ah.timber;
-            const useTradeForTender = effTender < ah.tender;
-            const useTradeForAbidos = effAbidos < ah.abidos;
-
-            // Compute Shopping List
-            let shop = { timber: 0, tender: 0, sturdy: 0, abidos: 0 };
-            let trades = [];
-
-            // Resolve Abidos
-            if (useTradeForAbidos) {
-                const powderNeeded = (req.abidos / 10) * 100;
-                // Powder comes from Timber or Tender?
-                if (ah.timber * (100/80) < ah.tender * (50/80)) {
-                    shop.timber += (powderNeeded / 80) * 100;
-                    trades.push(`Convert Timber to ${powderNeeded} Logging Powder, then to Abidos`);
-                } else {
-                    shop.tender += (powderNeeded / 80) * 50;
-                    trades.push(`Convert Tender to ${powderNeeded} Logging Powder, then to Abidos`);
-                }
-            } else {
-                shop.abidos += req.abidos;
+            if (totalBatches <= 0) {
+                alert("Insufficient gold for 1 craft.");
+                return;
             }
 
-            // Resolve Tender
-            if (useTradeForTender) {
-                const powderNeeded = (req.tender / 50) * 100;
-                shop.timber += (powderNeeded / 80) * 100;
-                trades.push(`Convert Timber to ${powderNeeded} Logging Powder, then to Tender`);
-            } else {
-                shop.tender += req.tender;
-            }
+            // Calculations for shopping list (round up to nearest 100 stack)
+            const stackTimber = Math.ceil((totalBatches * 112) / 100);
+            const stackTender = Math.ceil((totalBatches * 59) / 100);
+            const stackAbidos = Math.ceil((totalBatches * 43) / 100);
 
-            // Resolve Timber
-            if (useTradeForTimber) {
-                if (ah.tender * 25/50 < ah.sturdy * 5/50) {
-                    shop.tender += (req.timber / 50) * 25;
-                    trades.push(`Convert Tender Timber directly to Timber`);
-                } else {
-                    shop.sturdy += (req.timber / 50) * 5;
-                    trades.push(`Convert Sturdy Timber directly to Timber`);
-                }
-            } else {
-                shop.timber += req.timber;
-            }
+            const totalSpentOnMats = (stackTimber * pTimber) + (stackTender * pTender) + (stackAbidos * pAbidos);
+            const totalFees = totalBatches * 462;
+            const finalGold = goldTotal - (totalSpentOnMats + totalFees);
 
-            // UI Display
+            // Display
             document.getElementById('results').classList.remove('hidden');
-            document.getElementById('total-cost').innerText = (
-                (Math.ceil(shop.timber/100)*ah.timber*100) + 
-                (Math.ceil(shop.tender/100)*ah.tender*100) + 
-                (Math.ceil(shop.sturdy/100)*ah.sturdy*100) + 
-                (Math.ceil(shop.abidos/100)*ah.abidos*100)
-            ).toLocaleString() + "g";
-
-            document.getElementById('shopping-summary').innerHTML = `
-                <div class="flex justify-between border-b border-slate-700 pb-1"><span>Timber Stacks:</span> <span class="font-mono text-blue-300">${Math.ceil(shop.timber/100)}</span></div>
-                <div class="flex justify-between border-b border-slate-700 pb-1"><span>Tender Timber Stacks:</span> <span class="font-mono text-blue-300">${Math.ceil(shop.tender/100)}</span></div>
-                <div class="flex justify-between border-b border-slate-700 pb-1"><span>Sturdy Timber Stacks:</span> <span class="font-mono text-blue-300">${Math.ceil(shop.sturdy/100)}</span></div>
-                <div class="flex justify-between border-b border-slate-700 pb-1"><span>Abidos Timber Stacks:</span> <span class="font-mono text-blue-300">${Math.ceil(shop.abidos/100)}</span></div>
+            document.getElementById('res-total-crafts').innerText = (totalBatches * 10).toLocaleString();
+            document.getElementById('res-remaining-gold').innerText = finalGold.toLocaleString(undefined, {minimumFractionDigits: 2}) + "g";
+            
+            const list = document.getElementById('res-shopping-list');
+            list.innerHTML = `
+                <li><span class="text-blue-400 font-mono">${stackTimber}x</span> Timber Stacks</li>
+                <li><span class="text-blue-400 font-mono">${stackTender}x</span> Tender Timber Stacks</li>
+                <li><span class="text-blue-400 font-mono">0x</span> Sturdy Timber Stacks</li>
+                <li><span class="text-blue-400 font-mono">${stackAbidos}x</span> Abidos Timber Stacks</li>
             `;
-
-            const tradeList = document.getElementById('trade-instructions');
-            tradeList.innerHTML = trades.length > 0 ? trades.map(t => `<li>${t}</li>`).join('') : "<li>No trades needed; buy directly.</li>";
         }
     </script>
 </body>
