@@ -1,135 +1,110 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Serca Fusion Optimizer</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8">
+  <title>Serca Fusion Calculator</title>
+  <style>
+    body { font-family: Arial; padding: 20px; background:#0f172a; color:#e2e8f0 }
+    input { margin:5px; padding:5px }
+    button { padding:10px; margin-top:10px }
+    .box { background:#1e293b; padding:15px; border-radius:10px; margin-bottom:15px }
+  </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen p-4 md:p-8">
-    <div class="mx-auto max-w-4xl bg-slate-800 rounded-xl shadow-2xl border border-slate-700 p-6">
-        <h1 class="text-3xl font-bold mb-6 text-blue-400 border-b border-slate-700 pb-4">Serca Fusion Optimizer</h1>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <section class="space-y-4">
-                <h2 class="text-xl font-semibold text-slate-300">Market Prices (per 100 stack)</h2>
-                <div class="grid grid-cols-1 gap-3">
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Timber Cost (100x)</label>
-                        <input type="number" id="price-timber" value="180" class="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 outline-none focus:border-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Tender Timber Cost (100x)</label>
-                        <input type="number" id="price-tender" value="358" class="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 outline-none focus:border-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Sturdy Timber Cost (100x)</label>
-                        <input type="number" id="price-sturdy" value="1686" class="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 outline-none focus:border-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Abidos Timber Cost (100x)</label>
-                        <input type="number" id="price-abidos" value="2198" class="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 outline-none focus:border-blue-500">
-                    </div>
-                </div>
+<body>
 
-                <h2 class="text-xl font-semibold text-slate-300 mt-6">Wallet Settings</h2>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Gold Balance</label>
-                        <input type="number" id="gold-balance" value="1400000" class="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 outline-none focus:border-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Gold To Keep</label>
-                        <input type="number" id="gold-keep" value="100000" class="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 outline-none focus:border-blue-500">
-                    </div>
-                </div>
-                
-                <button onclick="calculate()" class="w-full bg-blue-600 hover:bg-blue-500 transition-colors py-3 rounded-lg font-bold text-lg mt-4">
-                    Calculate Max Craft
-                </button>
-            </section>
+<h2>Serca Fusion Material Optimizer</h2>
 
-            <section id="results" class="bg-slate-900/50 rounded-lg p-6 border border-slate-700 hidden">
-                <h2 class="text-xl font-semibold text-blue-300 mb-4">Optimal Strategy</h2>
-                <div class="space-y-4">
-                    <div class="text-4xl font-bold text-green-400" id="res-total-crafts">0</div>
-                    <p class="text-sm text-slate-400">Total Serca Fusion Materials</p>
-                    
-                    <hr class="border-slate-700">
-                    
-                    <h3 class="font-medium text-slate-300">Purchase List (Stacks of 100):</h3>
-                    <ul id="res-shopping-list" class="space-y-1 text-slate-200"></ul>
-                    
-                    <h3 class="font-medium text-slate-300 mt-4">Remaining Gold:</h3>
-                    <div id="res-remaining-gold" class="text-lg font-mono text-yellow-500">0g</div>
-                    <p class="text-xs text-slate-500 italic">*Includes flat crafting fees and AH purchases.</p>
-                </div>
-            </section>
-        </div>
-    </div>
+<div class="box">
+  <h3>Inputs</h3>
+  Gold Balance: <input id="gold" type="number"><br>
+  Gold To Keep: <input id="keep" type="number"><br><br>
 
-    <script>
-        function calculate() {
-            const pTimber = parseFloat(document.getElementById('price-timber').value);
-            const pTender = parseFloat(document.getElementById('price-tender').value);
-            const pSturdy = parseFloat(document.getElementById('price-sturdy').value);
-            const pAbidos = parseFloat(document.getElementById('price-abidos').value);
-            
-            const goldTotal = parseFloat(document.getElementById('gold-balance').value);
-            const goldKeep = parseFloat(document.getElementById('gold-keep').value);
-            const availableBudget = goldTotal - goldKeep;
+  Cost per 100 Timber: <input id="c_timber" type="number"><br>
+  Cost per 100 Tender Timber: <input id="c_tender" type="number"><br>
+  Cost per 100 Sturdy Timber: <input id="c_sturdy" type="number"><br>
+  Cost per 100 Abidos Timber: <input id="c_abidos" type="number"><br>
+</div>
 
-            // Effective individual item costs from AH
-            const unitCosts = {
-                timber: pTimber / 100,
-                tender: pTender / 100,
-                sturdy: pSturdy / 100,
-                abidos: pAbidos / 100
-            };
+<button onclick="calculate()">Calculate</button>
 
-            // Optimization: Find cheapest way to get 1 of each required item
-            // 25 Tender -> 50 Timber (1 Tender = 2 Timber)
-            // 5 Sturdy -> 50 Timber (1 Sturdy = 10 Timber)
-            // 100 Powder -> 50 Tender | 10 Sturdy | 10 Abidos
-            // We'll use a simplified comparison for the specific recipe needs:
-            const bestCostTimber = Math.min(unitCosts.timber, (unitCosts.tender * 25/50), (unitCosts.sturdy * 5/50));
-            const bestCostTender = Math.min(unitCosts.tender, (unitCosts.timber * 100/80 * 100/50)); // Timber -> Powder -> Tender
-            const bestCostAbidos = Math.min(unitCosts.abidos, (unitCosts.timber * 100/80 * 100/10)); // Timber -> Powder -> Abidos
+<div class="box" id="output"></div>
 
-            // Cost per 10x Craft (Batch)
-            // Requirements: 112 Timber, 59 Tender, 43 Abidos + 462g fee
-            const materialCostPerBatch = (112 * bestCostTimber) + (59 * bestCostTender) + (43 * bestCostAbidos);
-            const totalCostPerBatch = materialCostPerBatch + 462;
+<script>
 
-            const totalBatches = Math.floor(availableBudget / totalCostPerBatch);
-            
-            if (totalBatches <= 0) {
-                alert("Insufficient gold for 1 craft.");
-                return;
-            }
+const RECIPE = {
+  timber: 112/10,
+  tender: 59/10,
+  abidos: 43/10,
+  gold: 462/10
+};
 
-            // Calculations for shopping list (round up to nearest 100 stack)
-            const stackTimber = Math.ceil((totalBatches * 112) / 100);
-            const stackTender = Math.ceil((totalBatches * 59) / 100);
-            const stackAbidos = Math.ceil((totalBatches * 43) / 100);
+function calculate(){
+  const gold = +document.getElementById('gold').value;
+  const keep = +document.getElementById('keep').value;
 
-            const totalSpentOnMats = (stackTimber * pTimber) + (stackTender * pTender) + (stackAbidos * pAbidos);
-            const totalFees = totalBatches * 462;
-            const finalGold = goldTotal - (totalSpentOnMats + totalFees);
+  const costs = {
+    timber: +document.getElementById('c_timber').value/100,
+    tender: +document.getElementById('c_tender').value/100,
+    sturdy: +document.getElementById('c_sturdy').value/100,
+    abidos: +document.getElementById('c_abidos').value/100
+  };
 
-            // Display
-            document.getElementById('results').classList.remove('hidden');
-            document.getElementById('res-total-crafts').innerText = (totalBatches * 10).toLocaleString();
-            document.getElementById('res-remaining-gold').innerText = finalGold.toLocaleString(undefined, {minimumFractionDigits: 2}) + "g";
-            
-            const list = document.getElementById('res-shopping-list');
-            list.innerHTML = `
-                <li><span class="text-blue-400 font-mono">${stackTimber}x</span> Timber Stacks</li>
-                <li><span class="text-blue-400 font-mono">${stackTender}x</span> Tender Timber Stacks</li>
-                <li><span class="text-blue-400 font-mono">0x</span> Sturdy Timber Stacks</li>
-                <li><span class="text-blue-400 font-mono">${stackAbidos}x</span> Abidos Timber Stacks</li>
-            `;
+  const budget = gold - keep;
+
+  let best = { crafts:0 };
+
+  // brute force search within reasonable bounds
+  for(let t=0;t<=budget/costs.timber;t++){
+    for(let td=0;td<=budget/costs.tender;td++){
+      for(let s=0;s<=budget/costs.sturdy;s++){
+        for(let a=0;a<=budget/costs.abidos;a++){
+
+          const spend = t*costs.timber + td*costs.tender + s*costs.sturdy + a*costs.abidos;
+          if(spend > budget) continue;
+
+          let timber = t;
+          let tender = td;
+          let sturdy = s;
+          let abidos = a;
+
+          // conversions
+          timber += Math.floor(tender/25)*50;
+          timber += Math.floor(sturdy/5)*50;
+
+          let crafts = Math.min(
+            timber/RECIPE.timber,
+            tender/RECIPE.tender,
+            abidos/RECIPE.abidos
+          );
+
+          if(crafts > best.crafts){
+            best = { crafts, t, td, s, a, spend };
+          }
         }
-    </script>
+      }
+    }
+  }
+
+  document.getElementById('output').innerHTML = `
+    Crafts: ${Math.floor(best.crafts)}<br>
+    Timber: ${best.t}<br>
+    Tender Timber: ${best.td}<br>
+    Sturdy Timber: ${best.s}<br>
+    Abidos Timber: ${best.a}<br>
+    Gold Spent: ${best.spend.toFixed(2)}
+  `;
+}
+
+</script>
+
 </body>
 </html>
+
+
+<!-- DEPLOYMENT (Windows simple steps)
+1. Create GitHub repo
+2. Push this file as index.html
+3. Go to Settings > Pages
+4. Select branch: main, root
+5. Site live at https://<username>.github.io/<repo>
+-->
