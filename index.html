@@ -264,40 +264,61 @@
     </div>
   </div>
 
-  <!-- Timber Prices -->
+  <!-- Timber Prices & Stock -->
   <div class="card">
-    <div class="card-title">🪵 Auction House Prices (per 100 stack)</div>
+    <div class="card-title">🪵 Timber — Prices &amp; Existing Stock</div>
     <div class="input-grid">
+
+      <!-- Header row -->
+      <div style="display:flex; gap:12px; padding: 0 0 2px 0;">
+        <div style="flex:1"></div>
+        <div style="width:120px; text-align:center; font-size:0.65rem; text-transform:uppercase; letter-spacing:0.1em; color:#5a5244;">AH Price /100</div>
+        <div style="width:120px; text-align:center; font-size:0.65rem; text-transform:uppercase; letter-spacing:0.1em; color:#5a5244;">In Stock</div>
+      </div>
+
       <div class="input-row">
         <label>
           <div class="timber-label"><span class="dot dot-timber"></span>Timber</div>
-          <span class="sub">112 needed per 10x batch</span>
+          <span class="sub">112 per 10× batch</span>
         </label>
         <div class="input-wrap">
           <input type="number" id="priceTimber" min="0" step="0.01" placeholder="0.00">
           <span class="unit">g</span>
         </div>
+        <div class="input-wrap">
+          <input type="number" id="stockTimber" min="0" step="1" placeholder="0">
+          <span class="unit">u</span>
+        </div>
       </div>
       <div class="input-row">
         <label>
           <div class="timber-label"><span class="dot dot-tender"></span>Tender Timber</div>
-          <span class="sub">59 needed per 10x batch</span>
+          <span class="sub">59 per 10× batch</span>
         </label>
         <div class="input-wrap">
           <input type="number" id="priceTender" min="0" step="0.01" placeholder="0.00">
           <span class="unit">g</span>
         </div>
+        <div class="input-wrap">
+          <input type="number" id="stockTender" min="0" step="1" placeholder="0">
+          <span class="unit">u</span>
+        </div>
       </div>
       <div class="input-row">
         <label>
           <div class="timber-label"><span class="dot dot-abidos"></span>Abidos Timber</div>
-          <span class="sub">43 needed per 10x batch</span>
+          <span class="sub">43 per 10× batch</span>
         </label>
         <div class="input-wrap">
           <input type="number" id="priceAbidos" min="0" step="0.01" placeholder="0.00">
           <span class="unit">g</span>
         </div>
+        <div class="input-wrap">
+          <input type="number" id="stockAbidos" min="0" step="1" placeholder="0">
+          <span class="unit">u</span>
+        </div>
       </div>
+
     </div>
   </div>
 
@@ -360,6 +381,9 @@
     const priceTimber = parseFloat(document.getElementById('priceTimber').value) || 0;
     const priceTender = parseFloat(document.getElementById('priceTender').value) || 0;
     const priceAbidos = parseFloat(document.getElementById('priceAbidos').value) || 0;
+    const stockTimber = parseInt(document.getElementById('stockTimber').value)   || 0;
+    const stockTender = parseInt(document.getElementById('stockTender').value)   || 0;
+    const stockAbidos = parseInt(document.getElementById('stockAbidos').value)   || 0;
 
     const errEl    = document.getElementById('errorMsg');
     const resultEl = document.getElementById('resultBlock');
@@ -383,9 +407,12 @@
     const maxN = 100000; // generous upper bound
 
     for (let n = 1; n <= maxN; n++) {
-      const sT  = Math.ceil(needTimber  * n / 100);
-      const sTd = Math.ceil(needTender  * n / 100);
-      const sAb = Math.ceil(needAbidos  * n / 100);
+      const missingTimber = Math.max(0, needTimber  * n - stockTimber);
+      const missingTender = Math.max(0, needTender  * n - stockTender);
+      const missingAbidos = Math.max(0, needAbidos  * n - stockAbidos);
+      const sT  = Math.ceil(missingTimber / 100);
+      const sTd = Math.ceil(missingTender / 100);
+      const sAb = Math.ceil(missingAbidos / 100);
       const cost = sT * priceTimber + sTd * priceTender + sAb * priceAbidos;
       if (cost <= available) {
         bestN = n;
@@ -400,9 +427,12 @@
       return;
     }
 
-    const stacksTimber = Math.ceil(needTimber  * bestN / 100);
-    const stacksTender = Math.ceil(needTender  * bestN / 100);
-    const stacksAbidos = Math.ceil(needAbidos  * bestN / 100);
+    const missingTimber = Math.max(0, needTimber  * bestN - stockTimber);
+    const missingTender = Math.max(0, needTender  * bestN - stockTender);
+    const missingAbidos = Math.max(0, needAbidos  * bestN - stockAbidos);
+    const stacksTimber = Math.ceil(missingTimber / 100);
+    const stacksTender = Math.ceil(missingTender / 100);
+    const stacksAbidos = Math.ceil(missingAbidos / 100);
 
     const costTimber   = stacksTimber * priceTimber;
     const costTender   = stacksTender * priceTender;
